@@ -87,10 +87,10 @@ export default function ProductDetailScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => router.replace("/")}
             style={styles.backButton}
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel="Go back home"
           >
             <Text style={styles.backButtonText}>Back</Text>
           </Pressable>
@@ -119,10 +119,10 @@ export default function ProductDetailScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => router.replace("/")}
             style={styles.backButton}
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel="Go back home"
           >
             <Text style={styles.backButtonText}>Back</Text>
           </Pressable>
@@ -513,7 +513,7 @@ export default function ProductDetailScreen() {
 
       <View style={styles.bottomBar}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => router.replace("/scanner")}
           style={styles.scanAgainButton}
           accessibilityRole="button"
           accessibilityLabel="Scan again"

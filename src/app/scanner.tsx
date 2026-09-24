@@ -23,6 +23,7 @@ export default function ScannerScreen() {
   const [isLocked, setIsLocked] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const lastScannedRef = useRef<string | null>(null);
+  const requestInFlightRef = useRef(false);
 
   const handleScanAgain = () => {
     setLastScannedCode(null);
@@ -30,16 +31,23 @@ export default function ScannerScreen() {
     setIsLocked(false);
     setIsProcessing(false);
     lastScannedRef.current = null;
+    requestInFlightRef.current = false;
   };
 
   const handleBarcodeScanned = useCallback(
     async ({ data }: { data: string }) => {
       const barcode = data.trim();
 
-      if (!barcode || isLocked || lastScannedRef.current === barcode) {
+      if (
+        !barcode ||
+        requestInFlightRef.current ||
+        isLocked ||
+        lastScannedRef.current === barcode
+      ) {
         return;
       }
 
+      requestInFlightRef.current = true;
       lastScannedRef.current = barcode;
       setLastScannedCode(barcode);
       setScanError(null);
@@ -49,7 +57,8 @@ export default function ScannerScreen() {
       const result = await fetchProductByBarcode(barcode);
 
       if (result.status === "found") {
-        router.push({
+        requestInFlightRef.current = false;
+        router.replace({
           pathname: "/product/[barcode]",
           params: { barcode: result.product.barcode },
         });
@@ -57,10 +66,15 @@ export default function ScannerScreen() {
       }
 
       if (result.status === "not_found") {
-        router.push("/product-not-found");
+        requestInFlightRef.current = false;
+        router.replace({
+          pathname: "/product-not-found",
+          params: { barcode },
+        });
         return;
       }
 
+      requestInFlightRef.current = false;
       setScanError(result.message);
       setIsProcessing(false);
       setIsLocked(false);
@@ -220,15 +234,6 @@ export default function ScannerScreen() {
               )}
             </View>
           ) : null}
-
-          <View style={styles.cameraStatusRow}>
-            <View style={styles.cameraStatusBadge}>
-              <View style={styles.statusDot} />
-              <Text style={styles.cameraStatusText}>
-                Camera Active (60 FPS)
-              </Text>
-            </View>
-          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -251,7 +256,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     justifyContent: "space-between",
     paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.md,
+    paddingTop: 25,
     paddingBottom: Spacing.xl,
   },
   headerRow: {
@@ -259,6 +264,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
+    marginTop: 15,
     zIndex: 2,
   },
   iconButton: {
@@ -473,33 +479,6 @@ const styles = StyleSheet.create({
     ...Typography.labelMd,
     color: "#FFFFFF",
     fontWeight: "700",
-  },
-  cameraStatusRow: {
-    width: "100%",
-    alignItems: "center",
-  },
-  cameraStatusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 999,
-    backgroundColor: "#A4F3CC",
-  },
-  cameraStatusText: {
-    ...Typography.labelMd,
-    color: "rgba(255,255,255,0.8)",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
   },
   permissionContainer: {
     flex: 1,
