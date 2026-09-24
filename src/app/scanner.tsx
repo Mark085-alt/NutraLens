@@ -113,6 +113,7 @@ export default function ScannerScreen() {
       <CameraView
         style={styles.camera}
         facing={facing}
+        mirror={false}
         enableTorch={torchEnabled}
         onBarcodeScanned={handleBarcodeScanned}
         barcodeScannerSettings={{
